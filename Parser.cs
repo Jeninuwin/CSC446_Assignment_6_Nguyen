@@ -888,7 +888,6 @@ namespace CSC446_Assignment_6_Nguyen
                         Console.WriteLine("Error: " + Lexie.MatchTokens[increments] + " was found when searching for 'semit'. Not correct Grammar.");
                         Environment.Exit(1);
                         break;
-                        break;
                     }
             }
         }
@@ -934,7 +933,10 @@ namespace CSC446_Assignment_6_Nguyen
 
         public static void IOStat()
         {
-            //do nothing
+            if (Lexie.MatchTokens[increments] == "eoftt")
+            {
+                //do nothing for now
+            }
         }
 
         public static void Expr()
@@ -959,6 +961,10 @@ namespace CSC446_Assignment_6_Nguyen
             Addop();
             Term();
             MoreTerm();
+            if (Lexie.MatchTokens[increments] == "eoftt")
+            {
+                //do nothing for now
+            }
         }
 
         public static void Term()
@@ -972,6 +978,10 @@ namespace CSC446_Assignment_6_Nguyen
             Mulop();
             Factor();
             MoreFactor();
+            if (Lexie.MatchTokens[increments] == "eoftt")
+            {
+                //do nothing for now
+            }
         }
 
         public static void Factor()
@@ -1006,17 +1016,104 @@ namespace CSC446_Assignment_6_Nguyen
 
         public static void Addop()
         {
-
+            increments++;
+            switch (Lexie.LexemeString[increments])
+            {
+                case "addopt":
+                    {
+                        if(Lexie.MatchTokens[increments] == "+")
+                        {
+                            //do nothing for now
+                        }
+                        else if(Lexie.MatchTokens[increments] == "-")
+                        {
+                            //do nothing for now
+                        }
+                        break;
+                    }
+                case "relopt":
+                    {
+                        if(Lexie.MatchTokens[increments] == "||")
+                        {
+                            //do nothing for now
+                        }
+                        break;
+                    }
+                default:
+                    {
+                        Console.WriteLine("Error: " + Lexie.MatchTokens[increments] + " was found when searching for 'addopt'(+,-) or 'relopt'(||). Not correct Grammar.");
+                        Environment.Exit(1);
+                        break;
+                    }
+            }
         }
 
         public static void Mulop()
         {
-
+            increments++;
+            switch (Lexie.LexemeString[increments])
+            {
+                case "relopt":
+                    {
+                        if (Lexie.MatchTokens[increments] == "&&")
+                        {
+                            //do nothing for now
+                        }
+                        break;
+                    }
+                case "mulopt":
+                    {
+                        if (Lexie.MatchTokens[increments] == "*")
+                        {
+                            //do nothing for now
+                        }
+                        else if (Lexie.MatchTokens[increments] == "/")
+                        {
+                            //do nothing for now
+                        }
+                        break;
+                    }
+                default:
+                    {
+                        Console.WriteLine("Error: " + Lexie.MatchTokens[increments] + " was found when searching for 'mulopt'(*,/) or 'relopt'(&&). Not correct Grammar.");
+                        Environment.Exit(1);
+                        break;
+                    }
+            }
         }
 
         public static void SignOp()
         {
-
+            increments++;
+            switch (Lexie.LexemeString[increments])
+            {
+                case "addopt":
+                    {
+                        if (Lexie.MatchTokens[increments] == "-")
+                        {
+                            //do nothing for now
+                        }
+                        break;
+                    }
+                case "signopt":
+                    {
+                        if (Lexie.MatchTokens[increments] == "!")
+                        {
+                            //do nothing for now
+                        }
+                        break;
+                    }
+                case "eoftt":
+                    {
+                        break;
+                    }
+                default:
+                    {
+                        Console.WriteLine("Error: " + Lexie.MatchTokens[increments] + " was found when searching for 'addopt'(-), 'eoftt' or 'signopt(!) Not correct Grammar.");
+                        Environment.Exit(1);
+                        break;
+                    }
+            }
         }
     }
 }

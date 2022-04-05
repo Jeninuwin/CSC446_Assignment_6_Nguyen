@@ -51,6 +51,7 @@ namespace CSC446_Assignment_6_Nguyen
             thent, ift, elset, whilet, floatt, intt, chart, breakt, continuet, voidt, lparent, rparent, unknownt, eoftt, blanks,
             literalt, relopt, assignopt, addopt, mulopt, idt, integert, nott, whitespace, semit, quotet, colont, commat, closeParent,
             openParent, periodt, openCurlyParent, closeCurlyParent, openSquareParent, closeSquareParent, numt, constt,
+            signopt,
         }
 
         /// <summary>
@@ -616,6 +617,14 @@ namespace CSC446_Assignment_6_Nguyen
                         LexemeString.Add(Lexeme);
                         Token = Symbols.mulopt;
                         MatchTokens.Add("mulopt");
+                        counting++;
+                        break;
+                    }
+                case "!":
+                    {
+                        LexemeString.Add(Lexeme);
+                        Token = Symbols.signopt;
+                        MatchTokens.Add("signopt");
                         counting++;
                         break;
                     }
