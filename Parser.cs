@@ -553,6 +553,8 @@ namespace CSC446_Assignment_6_Nguyen
                     {
                         increments++;
                         Decl();
+                        StatList();
+
                         if (Lexie.MatchTokens[increments] == "closeCurlyParent")
                         {
                             increments++;
@@ -868,5 +870,153 @@ namespace CSC446_Assignment_6_Nguyen
             }
         }
 
+        public static void StatList()
+        {
+            Statement();
+            increments++;
+            switch (Lexie.LexemeString[increments])
+            {
+                case "semit":
+                    {
+                        StatList();
+                        break;
+                    }
+                case "eoftt":
+                    break;
+                default:
+                    {
+                        Console.WriteLine("Error: " + Lexie.MatchTokens[increments] + " was found when searching for 'semit'. Not correct Grammar.");
+                        Environment.Exit(1);
+                        break;
+                        break;
+                    }
+            }
+        }
+
+        public static void Statement()
+        {
+            switch (Lexie.LexemeString[increments])
+            {
+                case "assignopt":
+                    {
+                        AssignStat();
+                        break;
+                    }
+                default:
+                    {
+                        IOStat();
+                        break;
+                    }
+            }
+        }
+
+        public static void AssignStat()
+        {
+            increments++;
+
+            switch (Lexie.LexemeString[increments]) {
+                case "idt": {
+
+                        increments++;
+                        switch (Lexie.LexemeString[increments])
+                        {
+                            case "assignopt":
+                                {
+                                    increments++;
+                                    Expr();
+                                    break;
+                                }
+                        }
+                        break;
+                    }
+            }
+        }
+
+        public static void IOStat()
+        {
+            //do nothing
+        }
+
+        public static void Expr()
+        {
+            Relation();
+        }
+
+        public static void Relation()
+        {
+            SimpleExpr();
+        }
+
+        public static void SimpleExpr()
+        {
+            SignOp();
+            Term();
+            MoreTerm();
+        }
+
+        public static void MoreTerm()
+        {
+            Addop();
+            Term();
+            MoreTerm();
+        }
+
+        public static void Term()
+        {
+            Factor();
+            MoreFactor();
+        }
+
+        public static void MoreFactor()
+        {
+            Mulop();
+            Factor();
+            MoreFactor();
+        }
+
+        public static void Factor()
+        {
+            increments++;
+
+            switch (Lexie.LexemeString[increments])
+            {
+                case "idt":
+                    {   
+                        break;
+                    }
+                case "numt":
+                    {
+                        break;
+                    }
+                case "lparent":
+                    {
+                        Expr();
+                        increments++;
+                        switch (Lexie.LexemeString[increments])
+                        {
+                            case "rparent":
+                                {
+                                    break;
+                                }
+                        }
+                        break;
+                    }
+            }
+        }
+
+        public static void Addop()
+        {
+
+        }
+
+        public static void Mulop()
+        {
+
+        }
+
+        public static void SignOp()
+        {
+
+        }
     }
 }
