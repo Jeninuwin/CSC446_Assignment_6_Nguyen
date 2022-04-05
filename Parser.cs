@@ -961,6 +961,8 @@ namespace CSC446_Assignment_6_Nguyen
             Addop();
             Term();
             MoreTerm();
+
+            increments++;
             if (Lexie.MatchTokens[increments] == "eoftt")
             {
                 //do nothing for now
@@ -978,6 +980,8 @@ namespace CSC446_Assignment_6_Nguyen
             Mulop();
             Factor();
             MoreFactor();
+
+            increments++;
             if (Lexie.MatchTokens[increments] == "eoftt")
             {
                 //do nothing for now
