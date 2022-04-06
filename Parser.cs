@@ -1,21 +1,8 @@
 ﻿/// <summary>
 /// Name: Jenny Nguyen 
-/// Assignment: 5
-/// Description: This will allow the declaration of constants in the language. You will
-//have to add the reserved word const to your lexical analyzer and
-//rewrite the DECL and PROG procedure in your parser.
-//    Add the appropriate semantic actions to your parser to insert all
-//constants, variables and functions into your symbol table. For
-//constants you will have to set either the value or valuer field as
-//returned by your lexical analyzer. Variables will require the type, size
-//and current offset of the new variable.The first variable at a given
-//depth will be at offset 0. Integers have size 2, characters have size 1
-//and float has size 4. Update the offset field by the size of the new
-//variable after inserting the variable. Functions will require that you
-//keep track of the size of all local variables and formal parameters, the
-//number and type of all formal parameters and the return type of the
-//function. In all three cases the fields lexeme, token and depth are
-//required.
+/// Assignment: 6
+/// Description: Add the following grammar rules to your parser. Add the appropriate actions to your parser to check for undeclared 
+/// variables used in an assignment statement
 /// </summary>
 using System;
 
@@ -557,6 +544,17 @@ namespace CSC446_Assignment_6_Nguyen
 
                         if (Lexie.MatchTokens[increments] == "closeCurlyParent")
                         {
+                            //decrease depth 
+                            if (depth > 0)
+                            {
+                                SymbolTable.writeTable(depth);
+                            }
+
+                            SymbolTable.deleteDepth(depth);
+
+                            depth--;
+                            SymbolTable.writeTable(depth);
+
                             increments++;
                             Prog();
                             if (Lexie.MatchTokens[increments] == "eoftt")
@@ -617,14 +615,18 @@ namespace CSC446_Assignment_6_Nguyen
                     }
                 case "closeCurlyParent":
                     {
-                        //decrease depth 
-                        if (depth > 0)
-                        {
-                            SymbolTable.writeTable(depth);
-                        }
-                        SymbolTable.deleteDepth(depth);
-                        depth--;
-                        SymbolTable.writeTable(depth);
+                        ////decrease depth 
+                        //if (depth > 0)
+                        //{
+                        //    SymbolTable.writeTable(depth);
+                        //}
+                        //SymbolTable.deleteDepth(depth);
+                        //depth--;
+                        //SymbolTable.writeTable(depth);
+                        break;
+                    }
+                case "idt":
+                    {
                         break;
                     }
                 case "constt":
@@ -870,67 +872,145 @@ namespace CSC446_Assignment_6_Nguyen
             }
         }
 
+        /// <summary>
+        /// StatList -> Statement ; StatList|
+        /// </summary>
         public static void StatList()
         {
-            Statement();
-            increments++;
-            switch (Lexie.LexemeString[increments])
+            if(Lexie.MatchTokens[increments] == "idt")
             {
-                case "semit":
+                Statement();
+
+                switch (Lexie.MatchTokens[increments])
+                {
+                    case "semit":
+                        {
+                            increments++;
+                            StatList();
+                            break;
+                        }
+                    case "closeCurlyParent":
+                        {
+                            break;
+                        }
+                    default:
+                        {
+                            Console.WriteLine("Error: " + Lexie.MatchTokens[increments] + " was found when searching for 'semit'. Not correct Grammar.");
+                            Environment.Exit(1);
+                            break;
+                        }
+                }
+
+            }
+            else if(Lexie.MatchTokens[increments] == "closeCurlyParent")
+            {
+                //do nothing || exits program
+            }
+            else
+            {
+                Console.WriteLine("Error: " + Lexie.MatchTokens[increments] + " was found when searching for 'idt' or 'closeCurlyParent'. Not correct Grammar.");
+                Environment.Exit(1);
+            }
+
+
+        }
+
+        /// <summary>
+        /// Statement -> AssignStat | IOStat
+        /// </summary>
+        public static void Statement()
+        {
+
+            switch (Lexie.MatchTokens[increments])
+            {
+                case "idt":
                     {
-                        StatList();
+                        AssignStat();
                         break;
                     }
                 case "eoftt":
-                    break;
+                    {
+                        break;
+                    }
+                case "IO": //this is a placement till we get more information
+                    {
+                        IOStat();
+                        break;
+                    }
                 default:
                     {
-                        Console.WriteLine("Error: " + Lexie.MatchTokens[increments] + " was found when searching for 'semit'. Not correct Grammar.");
+                        Console.WriteLine("Error: " + Lexie.MatchTokens[increments] + " was found when searching for 'idt', 'eoftt', or 'IO'. Not correct Grammar.");
                         Environment.Exit(1);
                         break;
                     }
             }
         }
 
-        public static void Statement()
+        /// <summary>
+        /// AssignStat -> idt = Expr
+        /// </summary>
+        public static void AssignStat()
         {
-            switch (Lexie.LexemeString[increments])
-            {
-                case "assignopt":
+            switch (Lexie.MatchTokens[increments]) {
+
+                case "idt": 
                     {
-                        AssignStat();
-                        break;
+                        //lookup for dups and insert
+                        val = SymbolTable.lookUp(Lexie.LexemeString[increments]);
+                        //if (val.lexeme != Lexie.LexemeString[increments])
+                        //{
+                        //    //insert after storing the value
+                        //    SymbolTable.insert(Lexie.LexemeString[increments], position, depth, SymbolTable.RecordEnum.Variable);
+                        //}
+
+                        //else if (val.lexeme == Lexie.LexemeString[increments] && val.depth != depth)
+                        //{
+                        //    SymbolTable.insert(Lexie.LexemeString[increments], position, depth, SymbolTable.RecordEnum.Variable);
+                        //}
+
+
+                        if (val.lexeme != Lexie.LexemeString[increments])
+                        {
+                            Console.WriteLine("Error: " + Lexie.LexemeString[increments] + " was not found when searching for declaration. The depth found at:" + depth);
+                            Environment.Exit(1);
+                            break;
+
+                        }
+                        else
+                        {
+                            increments++;
+
+                            switch (Lexie.MatchTokens[increments])
+                            {
+                                case "assignopt":
+                                    {
+                                        increments++;
+                                        Expr();
+                                        break;
+                                    }
+                                default:
+                                    {
+                                        Console.WriteLine("Error: " + Lexie.MatchTokens[increments] + " was found when searching for 'assignopt'. Not correct Grammar.");
+                                        Environment.Exit(1);
+                                        break;
+                                    }
+                            }
+                            break;
+                        }
+                       
                     }
                 default:
                     {
-                        IOStat();
+                        Console.WriteLine("Error: " + Lexie.MatchTokens[increments] + " was found when searching for 'idt'. Not correct Grammar.");
+                        Environment.Exit(1);
                         break;
                     }
             }
         }
 
-        public static void AssignStat()
-        {
-            increments++;
-
-            switch (Lexie.LexemeString[increments]) {
-                case "idt": {
-
-                        increments++;
-                        switch (Lexie.LexemeString[increments])
-                        {
-                            case "assignopt":
-                                {
-                                    increments++;
-                                    Expr();
-                                    break;
-                                }
-                        }
-                        break;
-                    }
-            }
-        }
-
+        /// <summary>
+        /// IOStat -> 
+        /// </summary>
         public static void IOStat()
         {
             if (Lexie.MatchTokens[increments] == "eoftt")
@@ -939,16 +1019,25 @@ namespace CSC446_Assignment_6_Nguyen
             }
         }
 
+        /// <summary>
+        /// Expr -> Realtion
+        /// </summary>
         public static void Expr()
         {
             Relation();
         }
 
+        /// <summary>
+        /// Realtion -> SimpleExpr
+        /// </summary>
         public static void Relation()
         {
             SimpleExpr();
         }
 
+        /// <summary>
+        /// SimpleExpr -> SignOp Term MoreTerm
+        /// </summary>
         public static void SimpleExpr()
         {
             SignOp();
@@ -956,155 +1045,218 @@ namespace CSC446_Assignment_6_Nguyen
             MoreTerm();
         }
 
+        /// <summary>
+        /// MoreTerm -> Addop Term MoreTerm 
+        /// </summary>
         public static void MoreTerm()
         {
-            Addop();
-            Term();
-            MoreTerm();
+            switch (Lexie.MatchTokens[increments])
+            {
+                case "semit":
+                case "mulopt":
+                    {
+                        break;
+                    }
+                case "rparent":
+                    {
+                        increments++;
+                        break;
+                    }
+                default:
+                    {
+                        Addop();
+                        Term();
+                        MoreTerm();
+                        break;
+                    }
+            }
 
-            increments++;
             if (Lexie.MatchTokens[increments] == "eoftt")
             {
                 //do nothing for now
             }
         }
 
+        /// <summary>
+        /// Term -> Factor MoreFactor
+        /// </summary>
         public static void Term()
         {
             Factor();
             MoreFactor();
         }
 
+        /// <summary>
+        /// MoreFactor -> Mulop Factor MoreFactor 
+        /// </summary>
         public static void MoreFactor()
         {
-            Mulop();
-            Factor();
-            MoreFactor();
 
-            increments++;
-            if (Lexie.MatchTokens[increments] == "eoftt")
+            switch (Lexie.MatchTokens[increments])
             {
-                //do nothing for now
-            }
-        }
-
-        public static void Factor()
-        {
-            increments++;
-
-            switch (Lexie.LexemeString[increments])
-            {
-                case "idt":
-                    {   
+                case "semit":
+                case "addopt":
+                    {
                         break;
                     }
-                case "numt":
+                case "rparent":
                     {
+                        increments++;
+                        break;
+                    }
+                default:
+                    {
+                        Mulop();
+                        Factor();
+                        MoreFactor();
+                        break;
+                    }
+            }
+
+        }
+
+        /// <summary>
+        /// Factor -> id | num | ( Expr )
+        /// </summary>
+        public static void Factor()
+        {
+
+            switch (Lexie.MatchTokens[increments])
+            {
+                case "idt":
+                    {  
+                        //lookup for dups and insert
+                        val = SymbolTable.lookUp(Lexie.LexemeString[increments]);
+
+
+                        if (val.lexeme != Lexie.LexemeString[increments])
+                        {
+                            Console.WriteLine("Error: " + Lexie.LexemeString[increments] + " was not found when searching for declaration. The depth found at:" + depth);
+                            Environment.Exit(1);
+                            break;
+
+                        }
+                        else
+                        {
+                            increments++;
+                        }
+                        break; 
+                    }
+                case "numt":
+                case "rparent":
+                    {
+                        increments++;
                         break;
                     }
                 case "lparent":
                     {
-                        Expr();
                         increments++;
-                        switch (Lexie.LexemeString[increments])
-                        {
-                            case "rparent":
-                                {
-                                    break;
-                                }
-                        }
+                        Expr();
                         break;
                     }
             }
         }
 
+        /// <summary>
+        /// Addop -> + | - | '||'
+        /// </summary>
         public static void Addop()
         {
-            increments++;
-            switch (Lexie.LexemeString[increments])
+
+            switch (Lexie.MatchTokens[increments])
             {
                 case "addopt":
                     {
-                        if(Lexie.MatchTokens[increments] == "+")
+                        if(Lexie.LexemeString[increments] == "+")
                         {
-                            //do nothing for now
+                            increments++;
                         }
-                        else if(Lexie.MatchTokens[increments] == "-")
+                        else if(Lexie.LexemeString[increments] == "-")
                         {
-                            //do nothing for now
+                            increments++;
+                        }
+                        else if (Lexie.LexemeString[increments] == "||")
+                        {
+                            increments++;
                         }
                         break;
                     }
-                case "relopt":
+                case "semit":
+                case "numt":
+                case "idt":
                     {
-                        if(Lexie.MatchTokens[increments] == "||")
-                        {
-                            //do nothing for now
-                        }
                         break;
                     }
                 default:
                     {
-                        Console.WriteLine("Error: " + Lexie.MatchTokens[increments] + " was found when searching for 'addopt'(+,-) or 'relopt'(||). Not correct Grammar.");
+                        Console.WriteLine("Error: " + Lexie.MatchTokens[increments] + " was found when searching for 'addopt'(+,-), 'semit', 'numt', 'idt', or 'relopt'(||). Not correct Grammar.");
                         Environment.Exit(1);
                         break;
                     }
             }
         }
 
+        /// <summary>
+        /// Mulop -> * | / | &&
+        /// </summary>
         public static void Mulop()
         {
-            increments++;
-            switch (Lexie.LexemeString[increments])
+            switch (Lexie.MatchTokens[increments])
             {
-                case "relopt":
+                case "mulopt":
                     {
-                        if (Lexie.MatchTokens[increments] == "&&")
+                        if (Lexie.LexemeString[increments] == "*" || Lexie.LexemeString[increments] == "/" || Lexie.LexemeString[increments] == "&" || Lexie.LexemeString[increments] == "&")
                         {
-                            //do nothing for now
+                            increments++;
+                        }
+                        else
+                        {
+
                         }
                         break;
                     }
-                case "mulopt":
+                case "semit":
+                case "numt":
+                case "idt":
                     {
-                        if (Lexie.MatchTokens[increments] == "*")
-                        {
-                            //do nothing for now
-                        }
-                        else if (Lexie.MatchTokens[increments] == "/")
-                        {
-                            //do nothing for now
-                        }
                         break;
                     }
                 default:
                     {
-                        Console.WriteLine("Error: " + Lexie.MatchTokens[increments] + " was found when searching for 'mulopt'(*,/) or 'relopt'(&&). Not correct Grammar.");
+                        Console.WriteLine("Error: " + Lexie.MatchTokens[increments] + " was found when searching for 'mulopt'(*,/), 'semit', 'numt', 'idt' or 'relopt'(&&). Not correct Grammar.");
                         Environment.Exit(1);
                         break;
                     }
             }
         }
 
+        /// <summary>
+        /// SignOp -> ! | - | 
+        /// </summary>
         public static void SignOp()
         {
-            increments++;
-            switch (Lexie.LexemeString[increments])
+            switch (Lexie.MatchTokens[increments])
             {
                 case "addopt":
                     {
-                        if (Lexie.MatchTokens[increments] == "-")
+                        if (Lexie.LexemeString[increments] == "-")
                         {
-                            //do nothing for now
+                            increments++;
                         }
                         break;
                     }
                 case "signopt":
                     {
-                        if (Lexie.MatchTokens[increments] == "!")
+                        if (Lexie.LexemeString[increments] == "!")
                         {
-                            //do nothing for now
+                            increments++;
                         }
+                        break;
+                    }
+                case "numt":
+                case "idt":
+                case "lparent":
+                    {
                         break;
                     }
                 case "eoftt":
